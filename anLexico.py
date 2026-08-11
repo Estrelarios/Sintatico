@@ -37,7 +37,7 @@ def tokenizar(caminho):
         for invalido in re.finditer(INCORRETO, line):
             erros.append(Erro(linha_num, invalido.group(0), "token_invalido"))
 
-        # troca token invalido por espaco, para não atrabalhar outras detecções
+        # troca token invalido por espaco, para não atrapalhar outras detecções
         line = re.sub(INCORRETO, " ", line)
 
         encontrados = re.findall(PADRAO, line)

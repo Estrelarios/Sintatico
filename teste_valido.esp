@@ -1,0 +1,34 @@
+precipa() {
+
+    // declaracoes de todos os tipos
+    tuta x = 0;
+    reala r = 3.5;
+    karaktero c = 'c';
+    bolea b = vere;
+    bolea d = malvere;
+
+    // entrada e saida
+    eniro(c);
+    elijero(x);
+
+    // atribuicao com expressao completa
+    x = x + 1 * 2 - (3 / 1);
+    b = x < 10 e d au ne vere;
+
+    // decisao
+    se (x > 0) {
+        elijero(x);
+    } se ne {
+        elijero(x);
+    }
+
+    // laco condicional
+    dum (x < 10) {
+        x = x + 1;
+    }
+
+    // laco contado
+    al (tuta t = 0; t < -10; t = t + 1) {
+        elijero(t);
+    }
+}

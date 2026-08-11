@@ -2,22 +2,24 @@ precipa() {
 
     // declarações
     tuta x = 0;
-    karaktero k = 'c';
-    bolea b = vere;
+    k66araktero k_ = 'c';
+    bolea b === vere;
     bolea d = malvere;
-    reala r = 0.0;
+    reala r = 0.;
 
     // entrada
     eniro(x);
 
+    a=a+-1
+
     // laço de repeticao
-    al (tuta t = 0; t < 10; t = t + 1){
+    al (tuta t = 0; t < -10; t = t + 1){
 
         // estrutura de decisao
         se (x > 0) {
             elijero(x);
         } se ne {
-            elijero(0);
+            elijero(x);
         }  
     
     }
@@ -25,6 +27,4 @@ precipa() {
     dum (x < 10){
         x = x + 1;
     }
-
-    reveno 0;
 }
