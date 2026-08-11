@@ -1,0 +1,30 @@
+precipa() {
+
+    // declarações
+    tuta x = 0;
+    karaktero k = 'c';
+    bolea b = vere;
+    bolea d = malvere;
+    reala r = 0.0;
+
+    // entrada
+    eniro(x);
+
+    // laço de repeticao
+    al (tuta t = 0; t < 10; t = t + 1){
+
+        // estrutura de decisao
+        se (x > 0) {
+            elijero(x);
+        } se ne {
+            elijero(0);
+        }  
+    
+    }
+
+    dum (x < 10){
+        x = x + 1;
+    }
+
+    reveno 0;
+}
