@@ -1,101 +1,90 @@
-import string
 import re
+from collections import namedtuple
 
-tipos = ["tuta", "reala", "karaktero", "bolea"]
+Token = namedtuple("Token", ["tipo", "lexema", "linha"])
+Erro = namedtuple("Erro", ["linha", "erro", "tipo"])
 
-reservados = ["se", "se ne", "al", "dum", "precipa", "reveno", "vere", "malvere", "eniro", "elijero"]
+TIPOS = ["tuta", "reala", "karaktero", "bolea"]
+RESERVADAS = ["se", "se ne", "al", "dum", "precipa", "vere", "malvere", "eniro", "elijero"]
+OP_ARIT = ["+", "-", "*", "/"]
+OP_REL = ["==", "!=", ">", "<"]
+OP_LOG = ["e", "au", "ne"]
+OP_ATRIB = ["="]
+DELIMITADORES = ["(", ")", "{", "}", ",", ";"]
 
-op_arit = ["+", "-", "*", "/"]
-op_rel = ["==", "!=", ">", "<"]
-op_log = ["e", "au", "ne"]
-op_atrib = ["="]
+# REGEX padrões
+PADRAO = r"\bse\s+ne\b|'[^']'|\d+\.\d+|\d+|==|!=|[a-zA-Z_]\w*|[+\-*/=<>(),;{}]"
+INCORRETO = r"\+\+|--"
+CARACTERE = r"'[^']'"
+REAL = r"\d+\.\d+"
+ID = r"[a-zA-Z_]\w*"
 
-par_esq = ["("]
-par_dir = [")"]
-chave_esq = ["{"]
-chave_dir = ["}"]
-virgula = [","]
-ponto_virgula = [";"]
+def tokenizar(caminho):
+    tokens = []
+    erros = []
 
-tokens = []
+    with open(caminho, "r", encoding="utf-8") as f:
+        linhas = f.readlines()
 
-# regex de tokenização
-padrao = r"\bse\s+ne\b|'[^']'|\d+\.\d+|\d+|==|!=|[a-zA-Z_]\w*|[+\-*/=<>(),;{}]"
+    linha_num = 0
+    for linha_num, line in enumerate(linhas, start=1):
 
+        # remove comentários
+        if "//" in line:
+            line = line.split("//")[0]
+ 
+        # detectar operadores inválidos ++ e --
+        for invalido in re.finditer(INCORRETO, line):
+            erros.append(Erro(linha_num, invalido.group(0), "token_invalido"))
 
+        # troca token invalido por espaco, para não atrabalhar outras detecções
+        line = re.sub(INCORRETO, " ", line)
 
-f = open("Codigo.esp", "r")
+        encontrados = re.findall(PADRAO, line)
 
-for line in f:
+        # pegar tudo que não foi reconhecido
+        resto = re.sub(PADRAO, " ", line)
+        for erro in resto.split():
+            erros.append(Erro(linha_num, erro, "token_invalido"))
 
-    # remove comentarios
-    if "//" in line:
-        line = line.split("//")[0]
+        for lexema in encontrados:
 
-    encontrados = re.findall(padrao, line)
+            if lexema in TIPOS:
+                tokens.append(Token("tipo", lexema, linha_num))
 
-    i = 0
-    while i < len(encontrados):
+            elif lexema in RESERVADAS:
+                tokens.append(Token("reservado", lexema, linha_num))
 
-        token = encontrados[i]
+            elif lexema in OP_ARIT:
+                tokens.append(Token("op_arit", lexema, linha_num))
 
-        # tipos
-        if token in tipos:
-            tokens.append(["tipo", token])
+            elif lexema in OP_REL:
+                tokens.append(Token("op_rel", lexema, linha_num))
 
-        # reservados
-        elif token in reservados:
-            tokens.append(["reservado", token])
+            elif lexema in OP_LOG:
+                tokens.append(Token("op_log", lexema, linha_num))
 
-        # operadores
-        elif token in op_arit:
-            tokens.append(["op_arit", token])
+            elif lexema in OP_ATRIB:
+                tokens.append(Token("op_atrib", lexema, linha_num))
 
-        elif token in op_rel:
-            tokens.append(["op_rel", token])
+            elif lexema in DELIMITADORES:
+                tokens.append(Token("delim", lexema, linha_num))
 
-        elif token in op_log:
-            tokens.append(["op_log", token])
+            elif re.match(REAL, lexema):
+                tokens.append(Token("num_real", lexema, linha_num))
 
-        elif token in op_atrib:
-            tokens.append(["op_atri", token])
+            elif lexema.isdigit():
+                tokens.append(Token("num_int", lexema, linha_num))
 
-        # delimitadores
-        elif token in par_esq:
-            tokens.append([token])
+            elif re.match(CARACTERE, lexema):
+                tokens.append(Token("caractere", lexema, linha_num))
 
-        elif token in par_dir:
-            tokens.append([token])
+            elif re.match(ID, lexema):
+                tokens.append(Token("id", lexema, linha_num))
 
-        elif token in chave_esq:
-            tokens.append([token])
+            else:
+                erros.append(Erro(linha_num, lexema, "desconhecido"))
 
-        elif token in chave_dir:
-            tokens.append([token])
-
-        elif token in virgula:
-            tokens.append([token])
-
-        elif token in ponto_virgula:
-            tokens.append([token])
-
-        # numeros e caractere
-        elif re.match(r'^\d+\.\d+$', token):
-            tokens.append(["num_real", token])
-
-        elif re.match(r"^'[^']'$", token):
-            tokens.append(["caractere", token])
-
-        elif token.isdigit():
-            tokens.append(["num_int", token])
-
-        # identificadores
-        else:
-            tokens.append(["id", token])
-
-        i += 1
-
-f.close()
-
-for t in tokens:
-    print(t)
+    # adiciona token EOF no final
+    tokens.append(Token("EOF", "$", linha_num + 1))
+    return tokens, erros
