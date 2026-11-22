@@ -1,6 +1,21 @@
 from anLexico import tokenizar, Token
 from tabela import TABELA_PARSING, FOLLOWS
 
+class No:
+    """Nó da árvore de derivação (parse tree).
+
+    simbolo: nome do não-terminal ou do terminal esperado
+    filhos:  lista de No (vazia para terminais e produções ε)
+    token:   Token casado (somente para terminais)
+    """
+    def __init__(self, simbolo, token=None):
+        self.simbolo = simbolo
+        self.filhos = []
+        self.token = token
+
+    def __repr__(self):
+        return f"No({self.simbolo})"
+
 def eh_terminal(simbolo):
     return simbolo not in TABELA_PARSING
 
@@ -23,13 +38,15 @@ def analisador_sintatico(caminho_fonte):
         print("Erros Léxicos:")
         for err in erros_lex: print(f"  Linha {err.linha}: {err.erro}")
     
-    pilha = ["$", "PROGRAMA"]
+    raiz = No("PROGRAMA")
+    # a pilha guarda pares (simbolo, no) para montar a árvore durante a análise
+    pilha = [("$", None), ("PROGRAMA", raiz)]
     index = 0
     erros_sintaticos = []
     primitivas_encontradas = set() 
     
     while len(pilha) > 0:
-        topo = pilha[-1]
+        topo, no_topo = pilha[-1]
         token_atual = tokens[index]
         chave = get_chave(token_atual)
 
@@ -40,6 +57,8 @@ def analisador_sintatico(caminho_fonte):
         # 1. Sucesso
         if topo == chave:
             pilha.pop()
+            if no_topo is not None:
+                no_topo.token = token_atual
             index += 1
             
         # 2. Erro
@@ -53,8 +72,10 @@ def analisador_sintatico(caminho_fonte):
             if chave in TABELA_PARSING.get(topo, {}):
                 producao = TABELA_PARSING[topo][chave]
                 pilha.pop()
-                for simbolo in producao:
-                    pilha.append(simbolo)
+                # a produção está invertida na tabela: filhos na ordem correta = reversed
+                no_topo.filhos = [No(simbolo) for simbolo in reversed(producao)]
+                for filho in reversed(no_topo.filhos):
+                    pilha.append((filho.simbolo, filho))
             
             # 4. Modo pânico
             else:
@@ -92,6 +113,8 @@ def analisador_sintatico(caminho_fonte):
     #     print(f"\n{len(primitivas_ausentes)} de {len(todas_primitivas)} primitiva(s) não foram encontradas:")
     #     for p in primitivas_ausentes:
     #         print("  -", p)
+
+    return raiz, erros_lex, erros_sintaticos
 
 if __name__ == "__main__":
     # Crie um arquivo de teste "codigo_teste.txt" para rodar

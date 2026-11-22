@@ -1,0 +1,33 @@
+precipa() {
+
+    // sintaticamente valido, semanticamente invalido
+    tuta x = 0;
+    tuta x = 1;              // redeclaracao
+    tuta i = 2.5;            // reala -> tuta
+    reala r = 1;             // ok (widening)
+    bolea b = 5;             // tuta -> bolea
+    karaktero c = 'a';
+
+    y = 3;                   // nao declarada
+    x = vere;                // bolea -> tuta
+    b = x + c;               // operandos invalidos
+    r = x / 0;               // divisao por zero
+    b = ne x;                // ne em tuta
+    b = x < 10 e r;          // e com reala
+
+    se (x) {                 // condicao nao bolea
+        elijero(z);          // nao declarada
+    }
+
+    dum (x + 1) {            // condicao nao bolea
+        tuta x = 3;          // ok: escopo interno (sombreia)
+    }
+
+    tuta nao_init;
+    elijero(nao_init);       // aviso: sem inicializacao
+
+    al (tuta t = 0; t < 10; t = t + 1) {
+        elijero(t);
+    }
+    elijero(t);              // t fora do escopo
+}
